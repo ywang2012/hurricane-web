@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html manifest="weathermaps.manifest">
+  <HEAD>
+
+    <TITLE>Weather Maps</TITLE>
+
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+    <META HTTP-EQUIV="Expires" CONTENT="-1">
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+
+    <!-- iPhone specific stuffs -->
+    <meta name="viewport" content="initial-scale=1,maximum-scale=4.0,user-scalable=yes,width=device-width" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+    <!-- jQuery, jQTouch etc -->
+    <script src="scripts/jQuery_1.8.1.js" type="text/javascript"></script>
+    <script src="scripts/jqtouch-1.0-b4-rc/jqtouch.min.js" type="application/x-javascript" charset="utf-8"></script>
+    <script src="scripts/jqtouch-1.0-b4-rc/jqtouch-jquery.min.js" type="application/x-javascript" charset="utf-8"></script>
+    <link rel="stylesheet" href="scripts/jqtouch-1.0-b4-rc/themes/css/jqtouch.css" title="jQTouch">
+
+    <link rel="stylesheet" href="scripts/jqtouch-1.0-b4-rc/themes/css/iphoneNotice.css">
+
+    <!-- scripts for this app -->
+    <script type="text/javascript" charset="utf-8">
+        var jQT = new $.jQTouch({
+        	  icon: 'scripts/jqtouch-1.0-b4-rc/themes/img/weathermap.png',
+            icon4: 'scripts/jqtouch-1.0-b4-rc/themes/img/weathermap.png',
+            addGlossToIcon: false,
+            startupScreen: 'jqt_startup.png',
+            statusBar: 'black-translucent',
+            themeSelectionSelector: '#jqt #themes ul',
+            preloadImages: []
+        });
+
+        var menuitems = ['usmenu','chnmenu'];
+        var currmenu = 'usmenu';
+
+        $(function() {
+          getImgSize($("#weatherimg").attr("src"));
+          setCurrTime(true);
+
+          for (var item in menuitems) {
+            $('#'+menuitems[item]).click(function() {showMenu($(this).attr("id"));});
+          }
+
+          //if ( window.innerHeight != $(window).height()  ) {
+          if(("standalone" in window.navigator) && !window.navigator.standalone) {
+            var nwidth = $("#addHomeScreen").width();
+            var nheight = $("#addHomeScreen").height()+16;
+            $("#addHomeScreen").css("display","block")
+                .css("top", window.innerHeight-document.documentElement.scrollHeight+window.scrollY-nheight)
+                .css("left",($(window).width()-nwidth)/2);
+
+            //localStorage.setItem('first_access',1);
+          } else {
+            $("#addHomeScreen").css("display","none");
+          }
+          window.onorientationchange = function () {
+            getImgSize($("weatherimg").attr("src"));
+          };
+        });
+
+        function showMenu(mid) {
+
+        	for (var item in menuitems) {
+        		if (menuitems[item] != mid) {
+          	  $("#"+menuitems[item]).css("display","none");
+          	}
+          }
+          //alert('toggle '+mid);
+          $("#"+mid).toggle();
+
+          currmenu = mid;    // Remember which menu group is clicked
+
+          return false;
+        }
+
+        function showImg(iurl,htitle) {
+          var urlbase = '';
+          var titlepr = ''
+          var usa = true;
+
+          toggleImg(false);
+
+          $("#topbar h1").text(titlepr+htitle);
+          setCurrTime(usa);
+
+          var srcurl;
+          if ( currmenu == "usmenu" ) {
+            if ( ! iurl.match(/^http:\/\/./i) ) {
+              urlbase = "http://image.weather.com";
+            }
+            //$('#usmenu').toggle();
+            titlepr = "US "
+            usa = true;
+
+            srcurl = urlbase + iurl + "?"+Math.random();
+            $("#weatherimg").attr("src",srcurl);
+            toggleImg(true);
+            getImgSize(srcurl);
+
+          } else {
+            //$('#chnmenu').toggle();
+            usa = false;
+            if ( ! iurl.match(/^http:\/\/./i) ) {
+              urlbase = "http://i.weather.com.cn/i/product/pic";
+            }
+
+            var now = new Date();
+            var year = now.getUTCFullYear();
+            var month = now.getUTCMonth()+1;
+            var day = now.getUTCDate();
+            var hour = now.getUTCHours();
+            var minute = now.getUTCMinutes();
+
+            month = month > 9 ? month.toString() : '0'+month;
+            day   = day > 9 ? day.toString() : '0'+day;
+            hour  = hour > 9 ? hour.toString() : '0'+hour;
+            minute = minute - minute%10;
+            minute = minute > 9 ? minute.toString() : '0'+minute;
+
+            var dstr = '_'+year+month+day+hour+minute;
+
+            srcurl = urlbase+iurl.replace(/_\d{12}/,dstr)
+            //console.log('search for '+srcurl);
+            searchImgUrl(srcurl);
+          }
+        }
+
+        function reloadImg() {
+
+        	var imgsrc=$("#weatherimg").attr("src");
+      	  //console.log("orignal "+imgsrc)
+       	  imgsrc = imgsrc.replace(/\?[0-9\.]+/,'');
+       	  toggleImg(false);
+
+
+        	if (imgsrc.match(/weather\.com\.cn/) ) {
+            var now = new Date();
+            var year = now.getUTCFullYear();
+            var month = now.getUTCMonth()+1;
+            var day = now.getUTCDate();
+            var hour = now.getUTCHours();
+            var minute = now.getUTCMinutes();
+
+            month = month > 9 ? month.toString() : '0'+month;
+            day   = day > 9 ? day.toString() : '0'+day;
+            hour  = hour > 9 ? hour.toString() : '0'+hour;
+            minute = minute-minute%10;
+            minute = minute > 9 ? minute.toString() : '0'+minute;
+
+            var dstr = '_'+year+month+day+hour+minute;
+
+            var curl = imgsrc.replace(/_\d{12}/,dstr)
+
+            //console.log('trying '+curl);
+            searchImgUrl(curl);
+
+        	} else {
+        	  imgsrc += "?"+Math.random();
+        	  $("#weatherimg").attr("src",imgsrc);
+        	  //console.log("changed to "+imgsrc)
+        	  toggleImg(true);
+
+          	// Reload bottom bar
+            getImgSize(imgsrc);
+        	}
+
+        }
+
+        //<!-- private functions -->
+        function getImgSize(imgsrc) {
+
+          var newImg = new Image();
+          newImg.src = imgsrc;
+          newImg.onload = function(){
+                var rVal = {width: this.width, height: this.height};
+                //alert ('The image size is '+rVal.width+'*'+rVal.height);
+                setImgPosition(rVal,false)
+                return false;
+              };
+        }
+
+        // search images
+        function searchImgUrl(inurl) {
+
+            //console.log(inurl);
+            var matcharr = inurl.match(/_(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})\d{5}\.(gif|jpg|png)/);
+            if ( ! matcharr ) return false;
+
+            var intvl = 10*60000;
+
+            var year = matcharr[1];
+            var month = matcharr[2]-1;
+            var day = matcharr[3];
+            var hour = matcharr[4];
+            var minute = matcharr[5];
+
+            if ( inurl.match(/_l88_pi_/) ) {  // radar image
+            	//radar image every 10 minutes
+            	intvl = 10*60000;
+            } else if (inurl.match(/_lno_py/) ) {  // satellite data
+            	// satellite data evey 30 minutes
+            	intvl = 30*60000;
+            	minute = minute >= 30 ? 30 : 00;
+            } else  {                              // other data
+            	// satellite data evey 60 minutes
+            	intvl = 60*60000;
+            	minute = 0;
+            }
+
+
+            var nowdate = new Date(year,month,day,hour,minute,0,0);
+            nowdate.setTime(nowdate.getTime() - intvl);
+
+            year = nowdate.getFullYear();
+            month = nowdate.getMonth() + 1;
+            day = nowdate.getDate();
+            hour = nowdate.getHours();
+            minute = nowdate.getMinutes();
+
+            month = month > 9 ? month.toString() : '0'+month;
+            day   = day > 9 ? day.toString() : '0'+day;
+            hour  = hour > 9 ? hour.toString() : '0'+hour;
+            minute = minute > 9 ? minute.toString() : '0'+minute;
+
+            var dstr = '_'+year+month+day+hour+minute;
+
+            var curl = inurl.replace(/_\d{12}/,dstr)
+
+            //console.log('checking '+curl);
+            setCurrTime(false,[year,month,day,hour,minute]);
+            checkImgExist(curl);
+        }
+
+        // check image exists
+        function checkImgExist(imgurl) {
+          var img = new Image(),
+              loaded = false,
+              errored = false;
+
+          // Run only once, when `loaded` is false. If `success` is a
+          // function, it is called with `img` as the context.
+          img.onload = function () {
+                if (loaded) {
+                  return;
+                }
+
+                loaded = true;
+
+                $('#weatherimg').attr("src",img.src);
+                //alert('get '+img.src)
+                toggleImg(true);
+                getImgSize(img.src);
+              };
+
+          // Run only once, when `errored` is false. If `failure` is a
+          // function, it is called with `img` as the context.
+          img.onerror = function () {
+                if (errored) {
+                  return;
+                }
+
+                errored = true;
+
+                setTimeout(searchImgUrl(img.src),0);
+              };
+
+          img.src = imgurl;
+
+        }
+
+        function setImgPosition(rVal,full) {
+          var cVal = { 'width'  : $(window).width(),
+                      'height' : window.innerHeight }; //$(window).height();
+
+          if (! full) {
+            cVal.height = cVal.height - 88;
+          }
+
+          var wRatio = cVal.width/rVal.width;
+          var hRatio = cVal.height/rVal.height;
+
+          wRatio = wRatio > 1 ? 1 : wRatio;
+          hRatio = hRatio > 1 ? 1 : hRatio;
+
+          //alert(wRatio+", "+hRatio+'; '+
+          //      cVal.width+'/'+rVal.width+'; '+
+          //      cVal.height+'/'+rVal.height);
+
+          img = $("#weatherimg");
+          if (wRatio <= hRatio ) {
+            img.css('width',wRatio*rVal.width);
+            img.css('height','auto');
+            //img.css('position','absolute');
+            img.css('padding-top',(cVal.height-wRatio*rVal.height)/2);
+          } else {
+            img.css('height',hRatio*rVal.height);
+            img.css('width','auto');
+            img.css('padding-top',2);
+          }
+
+          // Set bottom bar location
+          var clienth = window.innerHeight; //$(window).height();
+          $("#botbar").css("top",clienth-40);
+
+          var hleft = (cVal.width-200)/2;
+          hleft = hleft > 0 ? hleft : 4;
+          // Set title
+          $("#topbar h1").css("left",hleft);
+
+          // Set menu position
+          var divtop = $('#botbar').css('top');
+          $('#usmenu').css('left',-10);
+          $('#usmenu').css('top',parseInt(divtop)-272);
+
+          var divleft = 0.35*cVal.width;
+          divleft = divleft > (cVal.width-248) ? (cVal.width-248) : divleft;
+          $('#chnmenu').css('left',divleft);
+          $('#chnmenu').css('top',parseInt(divtop)-297);
+
+          $('#loading').css('left',(cVal.width-220)/2);
+          $('#loading').css('top',(cVal.height-220)/2+44);
+        }
+
+        function setCurrTime(usa,datearr) {
+        	var now, searching;
+        	if (datearr) {
+        		now = new Date(datearr[0],datearr[1]-1,datearr[2],datearr[3],datearr[4],0,0);
+        		searching = true;
+        	} else {
+            now = new Date();
+            searching = false;
+          }
+
+          var year, month, day, hour, minute;
+          var tzone = 'EDT';
+          var utcsecs, showsecs;
+          var offmsec = 60*60000;  // convert to miliseconds
+          if (! searching) {
+            utcsecs = now.getTime();
+            showsecs = utcsecs;
+            if (usa) {
+              showsecs += offmsec;
+            } else {
+           	  showsecs += 13*offmsec;  // Beijing time
+            	tzone = '北京时间';
+            }
+          } else {
+            utcsecs = now.getTime();
+            showsecs = utcsecs + 8*offmsec;  // From UTC to BJT
+            tzone = '北京时间';
+          }
+          now = new Date(showsecs);
+          year = now.getFullYear();
+          month = now.getMonth()+1;
+          day   = now.getDate();
+          hour  = now.getHours();
+          minute = now.getMinutes();
+
+          var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dev'];
+          var apm = 'AM';
+          if (hour > 12) {
+            apm = 'PM';
+            hour -= 12;
+          }
+          var hstr = hour> 9 ? hour : '0'+hour;
+          var mstr = minute > 9 ? minute : '0'+minute;
+
+          var ctimestr;
+          if (usa) {
+          	ctimestr = day+' '+months[month-1]+' '+year+' '+hstr+':'+mstr+' '+apm+' '+tzone;
+          } else {
+          	ctimestr = tzone+' '+year+'年'+month+'月'+day+'日'+hstr+':'+mstr+' '+apm;
+          }
+          $("#currtime p").text(ctimestr);
+
+        }
+
+        function toggleImg(showing) {
+
+        	if (showing) {
+                $('#weatherimg').css('display','block');
+                $('#loading').css('display','none');
+                //$('#loading').fadeOut('fast',function() { return; });
+                //$('#weatherimg').fadeIn('fast',function() { return; });
+          } else {
+                $('#weatherimg').css('display','none');
+                $('#loading').css('display','block');
+                //$('#weatherimg').slideUp('slow',function() { return; });
+                //$('#loading').fadeIn('slow',function() { return; });
+          }
+        	return false;
+        }
+
+    </script>
+
+    <!-- style for this app specifically -->
+    <style type="text/css" media="screen">
+
+        /* Top bar */
+        div#jqt #topbar {
+        	height : 44px;
+        }
+
+        div#jqt #topbar h1 {
+          font-size : 16px;
+          margin-left : auto;
+          margin-right : auto;
+          left : auto;
+          width : auto;
+        }
+        div#jqt #topbar #infoButton {
+        	position : absolute;
+        	top : 6px;
+        }
+
+        /* Image area */
+        div#jqt #home #imgarea {
+          margin-top : 0px;
+          margin-bottom : 0px;
+        }
+
+        div#jqt #home #imgarea #weatherimg {
+          display : block;
+          margin-left : auto;
+          margin-right: auto;
+          height: auto;
+          width: auto;
+        }
+
+        div#currtime {
+          font-size : 12px;
+          position : absolute;
+          right : 10px;
+          top   : 45px;
+          color : #aaaa88;
+        }
+
+        div#jqt #botbar {
+            display: block;
+            position : absolute;
+            left : 0;
+            width : 100%;
+            padding : 3px;
+            margin : 0px;
+            opacity : 0.6;
+        }
+
+        div#jqt #botbar .individual{
+            padding : 0px;
+            margin : 0px;
+        }
+
+        div#jqt #botbar ul.individual li{
+            padding : 4px;
+            margin : 4px;
+            width : 30%;
+        }
+
+        /* US menu */
+        div#usmenu, div#chnmenu {
+          display : none;
+          z-index : 12;
+          opacity : 0.65;
+          min-height: 240px;
+          width : 240px;
+          padding : 4px;
+          margin : 0px;
+          position : absolute;
+          top : 60px;
+          background-image : none;
+        }
+
+        div#usmenu ul li, div#chnmenu ul li  {
+          margin : 4px;
+          padding : 4px;
+          font-size : 14px;
+        }
+
+        div#usmenu ul li.arrow:after, div#chnmenu ul li.arrow:after  {
+          font-size : 20px;
+          line-height : 24px;
+        }
+
+        /* about button */
+        div#jqt #about {
+            padding: 100px 10px 40px;
+            text-shadow: rgba(0, 0, 0, 0.3) 0px -1px 0;
+            color: #999;
+            font-size: 13px;
+            text-align: center;
+            background: #161618;
+        }
+        div#jqt #about p {
+            margin-bottom: 8px;
+        }
+        div#jqt #about a {
+            color: #fff;
+            font-weight: bold;
+            text-decoration: none;
+        }
+    </style>
+
+  </HEAD>
+
+  <body>
+
+    <div id="jqt">
+
+      <div id="home" class="current">
+        <div id="topbar" class="toolbar">
+            <h1>US National Doppler Radar</h1>
+            <a class="button slideup" id="infoButton" href="javascript:reloadImg();"><img src="scripts/jqtouch-1.0-b4-rc/themes/img/button_reload.png"></a>
+        </div>
+
+        <!-- imgarea -->
+        <div id="imgarea">
+            <img src="http://image.weather.com/web/radar/us_radar_plus_usen.jpg" id="weatherimg">
+            <img src="scripts/jqtouch-1.0-b4-rc/themes/img/loading_icon.gif" id="loading"  style="display:none;position:fixed;">
+        </div>
+
+        <div id="currtime">
+          <p>26 Sep 2012 05:03 EDT</p>
+        </div>
+
+        <!--Bottom buttons -->
+        <div id="botbar" class="info">
+          <ul class="individual">
+              <li><a href="javascript:showMenu('usmenu')">US Maps</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="javascript:showMenu('chnmenu')">China Maps</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- US menu -->
+      <div id="usmenu" class="scroll slideup">
+         <ul class="rounded">
+             <li class="arrow"><a href="javascript:showImg('/web/radar/us_radar_plus_usen.jpg','National Doppler Radar');">National Doppler Radar</a> </li>
+             <li class="arrow"><a href="javascript:showImg('/images/sat/ussat_600x405.jpg','IR Satellite');">IR Satellite</a></li>
+             <li class="arrow"><a href="javascript:showImg('/images/maps/current/curwx_600x405.jpg','Current Surface');">Current Surface</a></li>
+             <li class="arrow"><a href="javascript:showImg('/images/maps/current/acttemp_600x405.jpg','Current Temperatures');">Current Temperatures</a></li>
+             <li class="arrow"><a href="javascript:showImg('/web/forecast/us_wxhi1_large_usen_600.jpg','US Forecast');">US Forecast</a> </li>
+             <li class="arrow"><a href="javascript:showImg('http://i.imwx.com/images/maps/special/severe_us_600x405.jpg','Severe Wather Alerts');">Severe Wather Alerts</a></li>
+             <li class="arrow"><a href="javascript:showImg('/images/maps/pt_BR/health/tree_pol_720x486.jpg','Tree Pollen');">Tree Pollen</a></li>
+             <li class="arrow"><a href="javascript:showImg('/images/sat/east_asiasat_720x486.jpg','East Asia Satellite');">East Asia Satellite</a></li>
+
+         </ul>
+      </div>
+
+      <!-- China Menu -->
+      <div id="chnmenu" class="scroll slideup">
+         <ul class="rounded">
+             <li class="arrow"><a href="javascript:showImg('/l/sevp_aoc_rdcp_sldas_ebref_achn_l88_pi_20120926221000001.gif','全国雷达拼图');">全国雷达拼图</a> </li>
+             <li class="arrow"><a href="javascript:showImg('/m/sevp_nsmc_wxcl_asc_e99_achn_lno_py_20120927000000000.jpg','大陆区域彩色云图');">大陆区域彩色云图</a></li>
+             <li class="arrow"><a href="javascript:showImg('/m/sevp_nsmc_wxbl_asc_eir_achn_lno_py_20120927000000000.jpg','大陆区域红外云图');">大陆区域红外云图</a></li>
+             <li class="arrow"><a href="javascript:showImg('/l/sevp_nsmc_wxbl_fy2d_ewvp_achn_lno_py_20120927223000000.jpg','大陆区域水汽云图');">大陆区域水汽云图</a></li>
+             <li class="arrow"><a href="javascript:showImg('/m/sevp_nmc_weap_sgis_ee0_achn_lno_p9_20120926210000000.jpg','24小时降水量实况');">24小时降水量实况</a></li>
+             <li class="arrow"><a href="javascript:showImg('/m/sevp_nmc_gisp_s99_erf1_achn_l88_pb_20120927000002400.gif','24小时降水量预报');">24小时降水量预报</a></li>
+             <li class="arrow"><a href="javascript:showImg('/m/sevp_nmc_gisp_s99_eth10_achn_l88_pb_20120927000000000.gif','近10天全国最高气温');">近10天全国最高气温</a></li>
+             <li class="arrow"><a href="javascript:showImg('/m/sevp_pwsc_weap_micaps3_eto_achn_l88_pa_20120927120002400.png','全国平均气温实况');">全国平均气温实况</a></li>
+         </ul>
+      </div>
+
+      <!-- About -->
+      <div id="about" class="selectable">
+              <p><img src="scripts/jqtouch-1.0-b4-rc/themes/img/weathermap.png" /></p>
+              <p><strong>Weather Maps</strong><br>Version 1.0<br>
+                  <a href="http://throttle.ou.edu/weathermap.html">By Yunheng Wang</a></p>
+              <p><em>National Weather Maps.</em></p>
+              <p><br><br><a href="#" class="grayButton goback">Close</a></p>
+      </div>
+
+    </div>
+
+    <div class="iphoneNotice" id="addHomeScreen">
+      <div class="iphoneNoticeArrow"></div>
+      <div><a class="iphoneNoticeClose" id="noticeClose" href="javascript:$('#addHomeScreen').toggle();"></a>
+        <div style="margin-top:26px;">
+          <div class="iphoneNoticeLogo">
+            <img src="scripts/jqtouch-1.0-b4-rc/themes/img/weathermap.png" width="36" height="36">
+          </div>
+          <div>
+            <p class="iphoneNoticeBFont">For better view, add it to home screen!</p>
+            <p class="iphoneNoticeSFont">Click "
+              <span class="saveSign"></span>" and "Add to Home Screen"</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

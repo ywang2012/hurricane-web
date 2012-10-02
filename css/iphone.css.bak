@@ -1,0 +1,198 @@
+
+body {
+    background-color: #ddd; /* Background color */
+    color: #222;            /* Foreground color used for text */
+    font-family: Helvetica;
+    font-size: 14px;
+    margin: 0;              /* Amount of negative space around the outside of the body */
+    padding: 0;             /* Amount of negative space around the inside of the body */
+}
+
+#header h1, h2, h3 {
+    margin: 0;
+    padding: 0;
+}
+#header h1, h2, h3 {
+    background-color: #ccc;
+    border-bottom: 1px solid #666;
+    color: #222;
+    display: block;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 10px 0;
+    text-align: center;
+    text-decoration: none;
+
+    text-shadow: 0px 1px 0px #fff;
+    background-image: -webkit-gradient(linear, left top, left bottom,
+                                       from(#ccc), to(#999));
+}
+
+#header h2 {
+    font-size: 14px;
+    padding-left : 20px;
+}
+
+#header h3 {
+	  font-size: 16px;
+		width : 920px;
+}
+
+#header div.leftButton {
+    position: absolute;
+    top: 7px;
+    left: 6px;
+    padding-left : 4px;
+    height: 24px;
+    font-weight: bold;
+    text-align: center;
+    color: #AAAAAA;
+    line-height: 22px;
+    border-width: 0 8px 0 14px;
+    text-shadow: 0px -1px 0px rgba(0,0,0,0.6);
+    -webkit-border-image: url(../images/back_button.png) 0 8 0 14;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+#header div.pressed {
+    /*-webkit-border-image: url(../images/back_button_clicked.png) 0 8 0 8;*/
+    text-shadow: 0px 1px 0px rgba(0,0,0,0.6);
+    color: #FFFFFF;
+}
+
+#header div.rightFrm {
+    position: absolute;
+    top: 7px;
+    left: 750px;
+    padding-left : 6px;
+    height: 24px;
+    width : 80px;
+    font-weight: bold;
+    text-align: center;
+    color: white;
+    text-shadow: rgba(0,0,0,0.6) 0px -1px 0px;
+    line-height: 22px;
+    border-width: 0 8px 0 8px;
+}
+
+#footer {
+    position: absolute;
+    top: 320px;
+    left: 6px;
+    padding-left : 2px;
+    height: 14px;
+    text-align: left;
+    color: white;
+    font-size : 10px;
+}
+
+#footer a {
+    color: #3344AA;
+    text-decoration: none;
+}
+
+/* DatePicker */
+#calendar, #casebutton {
+  margin-top:10px;
+}
+
+#datepicker div {
+  margin-top:0px;
+}
+
+/* Products */
+#products ul {
+    list-style: none;
+    margin: 10px;
+    padding: 0;
+}
+#products ul li {
+    background-color: #FFFFFF;
+    border: 1px solid #999999;
+    color: #222222;
+    display: block;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: -1px;
+    padding: 12px 10px;
+    text-decoration: none;
+}
+
+#products ul li:first-child {
+    -webkit-border-top-left-radius: 8px;
+    -webkit-border-top-right-radius: 8px;
+}
+
+#products ul li:last-child {
+    -webkit-border-bottom-left-radius: 8px;
+    -webkit-border-bottom-right-radius: 8px;
+}
+
+#products ul li .note {
+	font-size:8pt;
+	background-color:#FFFFFF;
+	color:#AF1122;
+	font-weight: normal;
+  margin-left: 2px;
+}
+
+/* normal links */
+#products ul li.liActive A:link {
+	COLOR: #222222; TEXT-DECORATION: none;
+}
+#products ul li.liActive A:visited {
+	COLOR: #AAAA33; TEXT-DECORATION: none;
+}
+#products ul li.liActive A:hover {
+	font-weight: bold; COLOR: #FF0000; TEXT-DECORATION: none;
+}
+#products ul li.liActive A:active {
+	COLOR: #222222; TEXT-DECORATION: none;
+}
+
+/* highlighted links */
+#products ul li.liHlght A:link {
+	COLOR: #FF8822; TEXT-DECORATION: none;
+}
+
+#products ul li.liHlght A:hover {
+	font-weight: bold; COLOR: #FF0000; TEXT-DECORATION: none;
+}
+
+/* void links */
+#products ul li.liVoid A:link {
+	COLOR: #aaaaaa; TEXT-DECORATION: none;
+}
+#products ul li.liVoid A:visited {
+	COLOR: #aaaaaa; TEXT-DECORATION: none;
+}
+#products ul li.liVoid A:hover {
+	COLOR: #aaaaaa; TEXT-DECORATION: none
+}
+#products ul li.liVoid A:active {
+	COLOR: #aaaaaa; TEXT-DECORATION: none;
+}
+#products ul li.liVoid .note {
+	color:#aaaaaa;
+}
+
+/* animation frame */
+
+div#animImg img {
+  margin-top: -260px;
+  margin-left:-80px;
+}
+div#animImg {
+  overflow: hidden;
+  height  : 660px;
+  width   : 960px;
+}
+
+#toolbar {
+	width : 640px;
+	margin-left : 150px;
+	position : relative;
+	top : -60px;
+	opacity : 0.8;
+}
+

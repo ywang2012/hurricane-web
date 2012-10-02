@@ -1,0 +1,8 @@
+#/bin/tcsh -f
+set echo
+rm -rf smarty/templates_c/*.php smarty/cache/*.php
+#touch smarty/templates/*.tpl
+php-cgi index.php view=normal > /dev/null
+php-cgi mobile.php > /dev/null
+php-cgi mobile.php date=2012-09-05 action=prod > /dev/null
+php-cgi mobile.php date=2012-09-05 case=ekf00Z field=wspd action=anim > /dev/null

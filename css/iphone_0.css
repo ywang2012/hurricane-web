@@ -1,0 +1,42 @@
+
+body {
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+        margin:0;
+        padding:0;
+        overflow:hidden;
+}
+
+li span {
+	font-size:8pt;
+	background-color:#FFFFFF;
+	color:#AF1122;
+	font-weight: normal;
+        margin-left: 0px;
+}
+
+/************************************************/
+
+ul {
+	padding: 0px;
+}
+
+li {
+    margin: 0;
+    border-bottom: 1px solid #E0E0E0;
+    padding: 4px 0px 4px 2px;
+    font-size: 14px;
+    font-weight: bold;
+    list-style: none;
+}
+
+a {
+    display: block;
+    margin: 0px;
+    padding: 4px 0px 4px 0px;
+    text-decoration: none;
+    color: inherit;
+    background: url(../images/listArro.png) no-repeat right center;
+}

@@ -1,0 +1,14 @@
+CACHE MANIFEST
+
+weathermap.html
+scripts/jQuery_1.8.1.js
+scripts/jqtouch-1.0-b4-rc/jqtouch.min.js
+scripts/jqtouch-1.0-b4-rc/jqtouch-jquery.min.js
+scripts/jqtouch-1.0-b4-rc/themes/css/jqtouch.css
+scripts/jqtouch-1.0-b4-rc/themes/css/iphoneNotice.css
+scripts/jqtouch-1.0-b4-rc/themes/img/button_reload.png
+scripts/jqtouch-1.0-b4-rc/themes/img/loading_icon.gif
+scripts/jqtouch-1.0-b4-rc/themes/img/weathermap.png
+
+NETWORK:
+*
