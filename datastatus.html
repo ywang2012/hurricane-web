@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html manifest="datastatus.manifest">
+<html>
   <HEAD>
 
     <META HTTP-EQUIV="REFRESH" CONTENT="1800">
@@ -21,32 +21,6 @@
     <!-- style for this app specifically -->
     <style type="text/css" media="screen">
 
-      .center-wrapper{
-        /*text-align: center;*/
-        padding : 2px;
-        overflow-x : auto;
-      }
-      .center-wrapper * {
-        margin: 0 auto;
-      }
-
-      .ui-dialog-background {
-          opacity: 0.5;
-          display: block !important;
-          -webkit-transition: opacity 0.5s ease-in;
-      }
-
-      .ui-dialog-background.pop.in {
-          opacity: 1;
-          -webkit-transition: opacity 0.5s ease-in;
-      }
-
-      .ui-dialog {
-          min-height: 100% !important;
-          max-height : 100%;
-          background: transparent !important;
-      }
-
       table {
         border-collapse:collapse;
       }
@@ -54,6 +28,7 @@
       table thead th {
         border-top: 2px solid black;
         border-bottom: 2px solid black;
+        text-align : left;
       }
 
       .done {
@@ -69,7 +44,7 @@
       }
 
       .running, .doing {
-        color : #F7D62C;
+        color : #F79E2C;
       }
 
       .rerunning, .redoing {
@@ -94,30 +69,14 @@
       //jQuery onLoad function
       $(function() {
         $.ajaxSetup({cache: false});
-        //$.getScript('datastatus.php?action=show').error(updatestatus);
         $.post('datastatus.php',{action:'show'},updatestatus,'script')
             .error(updatestatus);
-        //$('#showpage').ajaxStop(function() { showTable(); });
-        $("form").submit(formsub);
       });
-
-       $(function() {
-           $('div[data-role="dialog"]').live('pagebeforeshow', function(e, ui) {
-           ui.prevPage.addClass("ui-dialog-background ");
-           });
-
-           $('div[data-role="dialog"]').live('pagehide', function(e, ui) {
-           $(".ui-dialog-background ").removeClass("ui-dialog-background ");
-           });
-       });
 
       // show status table
       function showTable () {
 
         $('#statustable > tbody').empty();
-        $("#updateform select#date").empty();
-        $("#deleteform select#date").empty();
-        //$("#deleteform select#date").append($('<option></option>').text("Select dates to be deleted"));
 
         $("#updatetime").html("Last update on "+lastupdate+".");
 
@@ -142,66 +101,7 @@
           });
           $('#statustable > tbody').append(trhtml);
 
-          if (dkey == curdate) {
-            $("#updateform select#date").append($("<option></option>").attr("value",dkey)
-                                    .text(dkey).attr("selected","selected") );
-            $.each(theader, function(dindx, ditem) {
-              $("#updateform input[name="+ditem+"]").val(statusentries[dkey][ditem]);
-            });
-            $("#updateform textarea").val(statusentries[dkey]['NOTES']);
-
-            $("#deleteform select#date").append($("<option></option>").attr("value",dkey)
-                                    .text(dkey) ); //.attr("selected","selected") );
-
-          } else {
-            $("#updateform select#date").append($("<option></option>").attr("value",dkey)
-                                                        .text(dkey) );
-            $("#deleteform select#date").append($("<option></option>").attr("value",dkey)
-                                                        .text(dkey) );
-          }
         });
-
-        $("#updateform select#date").change(function () {
-          var selval = $(this).val();
-          $.each(theader, function(dindx, ditem) {
-            $("#updateform input[name="+ditem+"]").val(statusentries[selval][ditem]);
-            //alert(selval+", "+ditem+", "+statusentries[selval][ditem]);
-          });
-          $("#updateform textarea").val(statusentries[selval]['NOTES']);
-        });
-      }
-
-      //handle form submission
-      function formsub(fobj) {
-        var formid = fobj.target.id;
-
-        var vals = {};
-        $.each($('#'+formid).serializeArray(),function (vindx,vitem) {
-          //alert(vitem.name+"="+vitem.value);
-          if (vals[vitem.name]) {
-            vals[vitem.name] += ","+vitem.value;
-          } else {
-            vals[vitem.name]=vitem.value;
-          }
-        });
-        vals['auth'] = localStorage.getItem("testwo");
-
-        // save current form information
-        //console.log(vals)
-        curdate = vals['date'];
-        curaction = vals['action'];
-
-        if (curaction == 'add' || curaction == "update") {
-          $.each(theader,function(hindx,hitem) {
-            currow[hitem] = vals[hitem];
-          });
-        }
-
-        //console.log($('#'+formid).serialize());
-
-        $.post('datastatus.php',vals,updatestatus,'script')
-            .error(updatestatus);
-        return false;
       }
 
       // ajax processed
@@ -213,76 +113,12 @@
         }
 
         if (errorcode == "good") { // success processed form
-          //update statusentries and dateitems
-          if (curaction != "show") {
-            $('#successcontent p').text('Status on '+curdate+' was successfully '+curaction+'ed.')
-            $.mobile.changePage($('#successdiag'),{transition: 'pop', role: 'dialog'});
-            $('#'+curaction+'form').clearForm();
-          } else {
-            curdate = dateitems[0];
-          }
-
-          switch (curaction) {
-            case 'add' :
-              dateitems.unshift( curdate );
-              statusentries[curdate] = $.extend({},currow);;
-              break;
-            case 'update' :
-              statusentries[curdate] = $.extend({},currow);
-              break;
-            case 'delete' :
-              dateitems.splice($.inArray(curdate,dateitems),1);
-              delete statusentries[curdate];
-              curdate = dateitems[0];
-              break;
-          }
 
           showTable();
         } else {
-          $('#failcontent p').html('Operation <span style="font-weight:bold;">'+curaction+
-                   '</span> failed with errorStatus = "<span style="color:red;">'+errorcode+
-                   '</span>"<br/>errormessage = "<span style="font-style:italic;">'+errormessage+'</span>".')
-          $('#retry').attr('href','#'+curaction+'page');
-          $.mobile.changePage($('#faildiag'),{transition: 'pop', role: 'dialog'});
+          alert(errormessage);
         }
         return false;
-      }
-
-      $.fn.clearForm = function() {
-        return this.each(function() {
-          var type = this.type, tag = this.tagName.toLowerCase();
-          if (tag == 'form')
-            return $(':input',this).clearForm();
-          if (type == 'text' || type == 'password' || tag == 'textarea')
-            this.value = '';
-          else if (type == 'checkbox' || type == 'radio')
-            this.checked = false;
-          else if (tag == 'select')
-            this.selectedIndex = -1;
-        });
-      };
-
-      function getRunCmd(objform) {
-        var cmdline = "/home/ywang/hurricane_scripts/runh2";
-        var jobdate = objform.form.rundate.value;
-        jobdate = jobdate.replace(/-/g,'');
-        if (! jobdate) {
-        	alert("Date is required!");
-        	return false;
-        }
-
-        var queue = $('input:radio[name=queue]:checked').val();
-        var jobcase = $('input:radio[name=case]:checked').val();
-        //alert(jobdate+queue+jobcase+attime);
-        cmdline += " -q "+queue+" "+jobdate+jobcase;
-
-        var attime = objform.form.attime.value;
-        if (attime && attime.match(/\d{1,2}:\d{1,2}/) ) {
-        	  cmdline = "echo \""+cmdline+"\" | at "+attime
-        } else {
-        	cmdline += " &";
-        }
-        $('input:text[name=output]').val(cmdline);
       }
 
     </script>
@@ -298,8 +134,8 @@
         <h1>2012 Hurricane Image Processing Status</h1>
       </div>
 
-      <div data-role="content" class="center-wrapper">
-        <p style="text-align: right;font-style:italic;font-size:10px;color:gray;" id="updatetime"></p>
+      <div data-role="content" style="padding-top: 0px;">
+        <p style="text-align: left;font-style:italic;font-size:10px;color:gray; position:relative; left:460px;" id="updatetime"></p>
         <table id="statustable">
           <thead>
             <tr>
@@ -314,248 +150,6 @@
           <tbody>
           </tbody>
         </table>
-      </div>
-
-      <div data-role="footer" data-position="fixed" data-id="botbar">
-        <div data-role="navbar">
-          <ul>
-            <li><a href="#showpage" class="ui-btn-active ui-state-persist" data-icon="home">Home</a></li>
-            <li><a href="#addpage" data-icon="plus">Add</a></li>
-            <li><a href="#updatepage" data-icon="refresh">Update</a></li>
-            <li><a href="#deletepage" data-icon="delete">Delete</a></li>
-            <li><a href="#aboutpage" data-icon="info">About</a></li>
-          </ul>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Add page -->
-    <div data-role="page" id="addpage" data-title="Add a Row">
-
-      <div data-role="header">
-        <a href="#showpage" data-rel="back" data-theme="b">Cancel</a>
-        <h1>Add New Processing Row</h1>
-      </div>
-
-      <div data-role="content">
-        <form id="addform" data-ajax="false">
-          <div data-role="fieldcontain">
-          <label for="date">Date:</label>
-          <input type="date" id="date" name="date" required
-                 min="2012-08-01" max="2012-12-31">
-          </div>
-
-          <div data-role="fieldcontain">
-          <label for="gfs00Z">GFS00Z:</label>
-          <input type="text" id="gfs00Z" name="GFS00Z">
-          </div>
-
-          <div data-role="fieldcontain">
-          <label for="gfs12Z">GFS12Z:</label>
-          <input type="text" id="gfs12Z" name="GFS12Z">
-          </div>
-
-          <div data-role="fieldcontain">
-          <label for="enkf00Z">EnKF00Z:</label>
-          <input type="text" id="enkf00Z" name="EnKF00Z">
-          </div>
-
-          <div data-role="fieldcontain">
-          <label for="enkf12Z">EnKF12Z:</label>
-          <input type="text" id="enkf12Z" name="EnKF12Z">
-          </div>
-
-          <div data-role="fieldcontain">
-          <label for="notes">NOTES:</label>
-          <textarea id="notes" name="NOTES"></textarea>
-          </div>
-
-          <input type="submit" id="action" name="action" Value="add" data-theme="b">
-
-        </form>
-      </div>
-
-    </div>
-
-    <!-- Update page -->
-    <div data-role="page" id="updatepage" data-title="Modify Status on a specific date">
-
-      <div data-role="header">
-        <a href="#showpage" data-rel="back" data-theme="b">Cancel</a>
-        <h1>Modify status on a specific date</h1>
-      </div>
-
-      <div data-role="content">
-        <form id="updateform" data-ajax="false">
-          <div data-role="fieldcontain">
-          <label for="date">Date to be updated:</label>
-          <select id="date" name="date">
-          </select>
-          </div>
-
-          <div data-role="fieldcontain">
-          <label for="gfs00Z">GFS00Z:</label>
-          <input type="text" id="gfs00Z" name="GFS00Z">
-          </div>
-
-          <div data-role="fieldcontain">
-          <label for="gfs12Z">GFS12Z:</label>
-          <input type="text" id="gfs12Z" name="GFS12Z">
-          </div>
-
-          <div data-role="fieldcontain">
-          <label for="enkf00Z">EnKF00Z:</label>
-          <input type="text" id="enkf00Z" name="EnKF00Z">
-          </div>
-
-          <div data-role="fieldcontain">
-          <label for="enkf12Z">EnKF12Z:</label>
-          <input type="text" id="enkf12Z" name="EnKF12Z">
-          </div>
-
-          <div data-role="fieldcontain">
-          <label for="notes">NOTES:</label>
-          <textarea id="notes" name="NOTES"></textarea>
-          </div>
-
-          <input type="submit" id="action" name="action" Value="update" data-theme="b">
-
-        </form>
-      </div>
-
-    </div>
-
-    <!-- Delete page -->
-    <div data-role="page" id="deletepage" data-title="Delete a row">
-
-      <div data-role="header">
-        <a href="#showpage" data-rel="back" data-theme="b">Cancel</a>
-        <h1>Delete a row</h1>
-      </div>
-
-      <div data-role="content">
-        <form id="deleteform" data-ajax="false">
-          <div data-role="fieldcontain">
-          <label for="date">Date to be deleted:</label>
-          <select id="date" name="date" data-native-menu="false" multiple="multiple">
-            <option>Select dates to be deleted</option>
-          </select>
-          </div>
-
-          <input type="submit" id="action" name="action" Value="delete" data-theme="b">
-
-        </form>
-      </div>
-
-    </div>
-
-    <!-- About page -->
-    <div data-role="page" id="aboutpage"  data-title="Infomation">
-
-      <div data-role="header">
-        <h1>About</h1>
-      </div>
-
-      <div data-role="content" style="text-align:center;">
-        <p><img src="images/hurrstatus.png" /></p>
-        <p><strong>Forecast Status Monitor</strong><br>Version 1.0<br>
-            By Yunheng Wang</p>
-        <p><em>2012.09.28</em></p>
-
-        <div data-role="collapsible" style="text-align:left;">
-          <h2>Run a Case</h2>
-
-          <form id="runform" data-ajax="false">
-            <div data-role="fieldcontain">
-            <label for="rundate">Date to be processed:</label>
-            <input type="date" id="rundate" name="rundate" required
-                   min="2012-08-01" max="2012-12-31">
-            </div>
-
-            <legend>Forecast case:</legend>
-            <div data-role="controlgroup" data-type="horizontal">
-            <label for="gfs1">GFS00Z</label>
-            <input type="radio" id="gfs1" name="case" value="gfs00Z" checked>
-            <label for="gfs2">GFS12Z</label>
-            <input type="radio" id="gfs2" name="case" value="gfs12Z">
-
-            <label for="gfs3">EnKF00Z</label>
-            <input type="radio" id="gfs3" name="case" value="ekf00Z">
-            <label for="gfs4">EnKF12Z</label>
-            <input type="radio" id="gfs4" name="case" value="ekf12Z">
-            </div>
-
-            <legend>Queue to be used:</legend>
-            <div data-role="controlgroup" data-type="horizontal">
-            <label for="queue1">normal</label>
-            <input type="radio" id="queue1" name="queue" value="normal" checked>
-            <label for="queue2">caps_forecast</label>
-            <input type="radio" id="queue2" name="queue" value="caps_forecast">
-            </div>
-
-            <div data-role="fieldcontain">
-            <label for="attime">Time to run the job:</label>
-            <input type="time" id="attime" name="attime">
-            </div>
-
-            <label for="output"><strong>Command to run:</strong></label>
-            <input type="text" id="output" name="output" value="">
-
-            <input type="button" id="getcmd" name="getcmd" Value="Get command" data-theme="b" onclick="getRunCmd(this);">
-
-          </form>
-
-        </div>
-
-      </div>
-
-      <div data-role="footer" data-position="fixed" data-id="botbar">
-        <div data-role="navbar">
-          <ul>
-            <li><a href="#showpage" data-icon="home">Home</a></li>
-            <li><a href="#addpage" data-icon="plus">Add</a></li>
-            <li><a href="#updatepage" data-icon="refresh">Update</a></li>
-            <li><a href="#deletepage" data-icon="delete">Delete</a></li>
-            <li><a href="#aboutpage" class="ui-btn-active ui-state-persist" data-icon="info">About</a></li>
-          </ul>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Success with Form -->
-    <div data-role="dialog" id="successdiag"  data-title="Success with form">
-
-      <div data-role="header">
-        <h1>Success with Form</h1>
-      </div>
-
-      <div data-role="content" id="successcontent">
-        <p>Status on 2012-09-12 was successfully deleted.</p>
-
-        <a href="#showpage" data-role="button" data-theme="b">Ok</a>
-      </div>
-
-    </div>
-
-    <!-- Fail with Form -->
-    <div data-role="dialog" id="faildiag"  data-title="Failed with form">
-
-      <div data-role="header">
-        <h1>Failed with Form</h1>
-      </div>
-
-      <div data-role="content" id="failcontent">
-        <p>Status on 2012-09-12 failed.</p>
-
-        <div  style="text-align:center;">
-        <div data-role="controlgroup" data-type="horizontal" style="display:inline-block;">
-          <a href="#showpage" data-role="button">Cancel</a>
-          <a href="#deletepage" data-role="button" data-theme="b" id="retry">Try again</a>
-        </div>
-        </div>
-
       </div>
 
     </div>
