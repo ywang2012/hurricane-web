@@ -48,7 +48,11 @@
       }
 
       .rerunning, .redoing {
-        color : rgba(255, 102, 0, 0.66);
+        color : rgba(255, 0, 173, 1);
+      }
+
+      .hourly {
+        color : #3C2CF7;
       }
 
     </style>
@@ -58,7 +62,7 @@
 
       var theader = new Array('GFS00Z','GFS12Z','EnKF00Z','EnKF12Z','NOTES');
       var tdstatus = new Array('Done','Failed','Running','Doing',
-                               'Rerunning','Redoing','Missing','Missed');
+                               'Rerunning','Redoing','Missing','Missed','Hourly');
 
       //var dateitems = new Array();
       //var statusentries = {};

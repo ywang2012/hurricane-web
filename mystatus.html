@@ -1,8 +1,6 @@
 <!DOCTYPE html>
-<html>
+<html manifest="datastatus.manifest">
   <HEAD>
-
-    <META HTTP-EQUIV="REFRESH" CONTENT="1800">
 
     <TITLE>2012 Hurricane Image Processing Status</TITLE>
 
@@ -70,7 +68,7 @@
       }
 
       .chkbox {
-      	min-width : 60px;
+      	min-width : 40px;
       	text-align : center;
       	display : none;
       }
@@ -92,7 +90,11 @@
       }
 
       .rerunning, .redoing {
-        color : rgba(255, 102, 0, 0.66);
+        color : rgba(255, 0, 173, 1);
+      }
+
+      .hourly {
+        color : #3C2CF7;
       }
 
     </style>
@@ -102,7 +104,7 @@
 
       var theader = new Array('GFS00Z','GFS12Z','EnKF00Z','EnKF12Z','NOTES');
       var tdstatus = new Array('Done','Failed','Running','Doing',
-                               'Rerunning','Redoing','Missing','Missed');
+                               'Rerunning','Redoing','Missing','Missed','Hourly');
 
       //var dateitems = new Array();
       //var statusentries = {};
@@ -118,6 +120,12 @@
             .error(updatestatus);
         //$('#showpage').ajaxStop(function() { showTable(); });
         $("form").submit(formsub);
+
+        if ( ! localStorage.getItem('testwo') ) {
+          $('div[data-role="navbar"] ul li:nth-child(2) a').addClass('ui-disabled');
+          $('div[data-role="navbar"] ul li:nth-child(3) a').addClass('ui-disabled');
+          $('div[data-role="navbar"] ul li:nth-child(4) a').addClass('ui-disabled');
+        }
       });
 
        $(function() {
@@ -147,8 +155,8 @@
 
           var mdmatch = dkey.match(/\d{4}-(\d{2})-(\d{2})/);
           var chkbox = $('<td>').addClass('chkbox')
-                       .html('<input type="radio" name="chkdate" value="'+dkey+'"' +
-                             'onclick="showActionPage(\''+dkey+'\')">');
+                       .html('<input type="radio" name="chkdate" value="'+dkey+'">');
+                            //+'onclick="showActionPage(\''+dkey+'\')">');
 
           var dtdhtml = $('<td style="font-weight:bold;padding-right:6px;">').text(mdmatch[1]+'.'+mdmatch[2]);
           var trhtml = $('<tr>').attr('bgcolor',trcolor).append(chkbox).append(dtdhtml);
@@ -168,10 +176,17 @@
       //show update selector
       function showChkbox(clkaction) {
         $('th:nth-child(1), td:nth-child(1)').show();
+        $('#statustable tr').bind('click',function(eobj) {
+          $(this).children(':first-child').children(':first-child').attr('checked','checked');
+          var dkey = $(this).children(':first-child').children(':first-child').val();
+          eobj.stopPropagation();
+          showActionPage(dkey);
+        });
         curaction = clkaction;
       }
 
       function showActionPage(datekey) {
+        $('#statustable tr').unbind()
         $('th:nth-child(1), td:nth-child(1)').hide();
         curdate = datekey;
 
@@ -537,8 +552,8 @@
           <ul>
             <li><a href="#showpage" data-icon="home">Home</a></li>
             <li><a href="#addpage" data-icon="plus">Add</a></li>
-            <li><a href="javascript:showChkbox('update')" data-icon="refresh">Update</a></li>
-            <li><a href="javascript:showChkbox('delete')" data-icon="delete">Delete</a></li>
+            <li><a href="javascript:showChkbox('update')" data-icon="refresh" class="ui-disabled">Update</a></li>
+            <li><a href="javascript:showChkbox('delete')" data-icon="delete"  class="ui-disabled">Delete</a></li>
             <li><a href="#aboutpage" class="ui-btn-active ui-state-persist" data-icon="info">About</a></li>
           </ul>
         </div>
